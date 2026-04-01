@@ -66,6 +66,53 @@ func TestNewOptional(t *testing.T) {
 	}
 }
 
+func TestOptional_Or(t *testing.T) {
+	t.Parallel()
+
+	// Arrange
+	tests := []struct {
+		name     string
+		value    optional.Optional[any]
+		fallback any
+		result   any
+	}{
+		{
+			name:     "string empty",
+			value:    optional.Empty[any](),
+			fallback: "fallback",
+			result:   "fallback",
+		},
+		{
+			name:     "string present",
+			value:    optional.Of[any]("test"),
+			fallback: "fallback",
+			result:   "test",
+		},
+		{
+			name:     "int empty",
+			value:    optional.Empty[any](),
+			fallback: 42,
+			result:   42,
+		},
+		{
+			name:     "int present",
+			value:    optional.Of[any](1),
+			fallback: 42,
+			result:   1,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			// Act
+			got := tc.value.Or(tc.fallback)
+
+			// Assert
+			assert.Equal(t, tc.result, got)
+		})
+	}
+}
+
 func TestOptional_String(t *testing.T) {
 	t.Parallel()
 

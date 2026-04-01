@@ -30,6 +30,21 @@ func ExampleOptional_Get() {
 	// ok 2:false
 }
 
+func ExampleOptional_Or() {
+	optPresent := optional.Of("value")
+	value := optPresent.Or("fallback")
+	fmt.Printf("value 1: %s\n", value)
+
+	optEmpty := optional.Empty[string]()
+	value = optEmpty.Or("fallback")
+	fmt.Printf("value 2: %s\n", value)
+
+	// Output:
+	//
+	// value 1: value
+	// value 2: fallback
+}
+
 func ExampleOptional_MarshalJSON() {
 	type Test struct {
 		Value1 optional.Optional[string] `json:"value1"`

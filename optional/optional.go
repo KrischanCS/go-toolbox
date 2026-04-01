@@ -31,6 +31,15 @@ func (o Optional[T]) Get() (value T, ok bool) {
 	return o.value, o.present
 }
 
+// Or returns the value if present, or the provided fallback value if empty.
+func (o Optional[T]) Or(fallback T) T {
+	if !o.present {
+		return fallback
+	}
+
+	return o.value
+}
+
 // String returns a string representation in the format:
 //   - If Present: Optional[{{type}}]: {{value}}
 //   - If Empty: Optional[{{type}}]: <empty>
