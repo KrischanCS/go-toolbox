@@ -45,6 +45,21 @@ func ExampleOptional_Or() {
 	// value 2: fallback
 }
 
+func ExampleOptional_IfOk() {
+	optPresent := optional.Of("value")
+	optPresent.IfOk(func(value string) {
+		fmt.Printf("This is executed and receives: %s\n", value)
+	})
+
+	optEmpty := optional.Empty[string]()
+	optEmpty.IfOk(func(_ string) {
+		fmt.Printf("This is never executed")
+	})
+
+	// Output:
+	// This is executed and receives: value
+}
+
 func ExampleOptional_MarshalJSON() {
 	type Test struct {
 		Value1 optional.Optional[string] `json:"value1"`

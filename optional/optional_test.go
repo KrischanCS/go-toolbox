@@ -113,6 +113,49 @@ func TestOptional_Or(t *testing.T) {
 	}
 }
 
+func TestOptional_IfOk(t *testing.T) {
+	t.Parallel()
+
+	// Arrange
+	tests := []struct {
+		name    string
+		value   optional.Optional[string]
+		want    string
+		execute bool
+	}{
+		{
+			name:    "string empty",
+			value:   optional.Empty[string](),
+			want:    "",
+			execute: false,
+		},
+		{
+			name:    "string present",
+			value:   optional.Of("test"),
+			want:    "test",
+			execute: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			executed := false
+			got := ""
+
+			// Act
+			tc.value.IfOk(func(val string) {
+				executed = true
+				got = val
+			})
+
+			// Assert
+			assert.Equal(t, tc.execute, executed)
+			assert.Equal(t, tc.want, got)
+		})
+
+	}
+}
+
 func TestOptional_String(t *testing.T) {
 	t.Parallel()
 

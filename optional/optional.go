@@ -40,6 +40,13 @@ func (o Optional[T]) Or(fallback T) T {
 	return o.value
 }
 
+// IfOk executes the provided function with the value if it is present.
+func (o Optional[T]) IfOk(fn func(T)) {
+	if o.present {
+		fn(o.value)
+	}
+}
+
 // String returns a string representation in the format:
 //   - If Present: Optional[{{type}}]: {{value}}
 //   - If Empty: Optional[{{type}}]: <empty>
