@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/KrischanCS/go-toolbox/iterator"
+	"github.com/KrischanCS/go-toolbox/tuple"
 )
 
 func ExampleUnique() {
@@ -96,5 +97,145 @@ func TestUnique_MustStopOnBreak(t *testing.T) {
 
 	// Assert
 	want := []int{1, 2, 3}
+	assert.Equal(t, want, got)
+}
+
+func ExampleUniqueBy() {
+	pairs := iterator.Of(
+		tuple.PairOf(1, "one"),
+		tuple.PairOf(1, "eins"),
+		tuple.PairOf(2, "two"),
+		tuple.PairOf(2, "zwei"),
+	)
+
+	first := func(t tuple.Pair[int, string]) int {
+		return t.First()
+	}
+
+	for p := range iterator.UniqueBy(pairs, first) {
+		fmt.Printf("%d: %s\n", p.First(), p.Second())
+	}
+
+	// Output:
+	// 1: one
+	// 2: two
+}
+
+func TestUniqueBy(t *testing.T) {
+	t.Parallel()
+
+	type test struct {
+		name          string
+		input         iter.Seq[tuple.Pair[int, string]]
+		getComparable func(tuple.Pair[int, string]) int
+		want          []tuple.Pair[int, string]
+	}
+
+	tests := []test{
+		{
+			name: "Should yield all values if all are different",
+			input: iterator.Of(
+				tuple.PairOf(1, "one"),
+				tuple.PairOf(2, "two"),
+				tuple.PairOf(3, "three"),
+			),
+			getComparable: func(t tuple.Pair[int, string]) int {
+				return t.First()
+			},
+			want: []tuple.Pair[int, string]{
+				tuple.PairOf(1, "one"),
+				tuple.PairOf(2, "two"),
+				tuple.PairOf(3, "three"),
+			},
+		},
+		{
+			name: "Should yield only first value if all are the same",
+			input: iterator.Of(
+				tuple.PairOf(1, "one"),
+				tuple.PairOf(1, "eins"),
+				tuple.PairOf(1, "uno"),
+			),
+			getComparable: func(t tuple.Pair[int, string]) int {
+				return t.First()
+			},
+			want: []tuple.Pair[int, string]{
+				tuple.PairOf(1, "one"),
+			},
+		},
+		{
+			name: "Should yield first value of each different value",
+			input: iterator.Of(
+				tuple.PairOf(1, "one"),
+				tuple.PairOf(1, "eins"),
+				tuple.PairOf(2, "two"),
+				tuple.PairOf(2, "zwei"),
+				tuple.PairOf(3, "three"),
+			),
+			getComparable: func(t tuple.Pair[int, string]) int {
+				return t.First()
+			},
+			want: []tuple.Pair[int, string]{
+				tuple.PairOf(1, "one"),
+				tuple.PairOf(2, "two"),
+				tuple.PairOf(3, "three"),
+			},
+		},
+		{
+			name:  "Should yield nothing if input is empty",
+			input: iterator.Of[tuple.Pair[int, string]](),
+			getComparable: func(t tuple.Pair[int, string]) int {
+				return t.First()
+			},
+			want: []tuple.Pair[int, string]{},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			// Arrange
+			got := make([]tuple.Pair[int, string], 0, 16)
+
+			// Act
+			for v := range iterator.UniqueBy(tc.input, tc.getComparable) {
+				got = append(got, v)
+			}
+
+			// Assert
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestUniqueBy_MustStopOnBreak(t *testing.T) {
+	t.Parallel()
+
+	// Arrange
+	input := iterator.Of(
+		tuple.PairOf(1, "one"),
+		tuple.PairOf(1, "eins"),
+		tuple.PairOf(2, "two"),
+		tuple.PairOf(2, "zwei"),
+		tuple.PairOf(3, "three"),
+		tuple.PairOf(3, "drei"),
+	)
+	first := func(t tuple.Pair[int, string]) int {
+		return t.First()
+	}
+	breakAt := 3
+	got := make([]tuple.Pair[int, string], 0, 2)
+
+	// Act
+	for v := range iterator.UniqueBy(input, first) {
+		if v.First() == breakAt {
+			break
+		}
+		got = append(got, v)
+	}
+
+	// Assert
+	want := []tuple.Pair[int, string]{
+		tuple.PairOf(1, "one"),
+		tuple.PairOf(2, "two"),
+	}
 	assert.Equal(t, want, got)
 }
