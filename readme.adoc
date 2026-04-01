@@ -84,6 +84,12 @@ Package set provides an implementation of a set, meaning a collection of unique,
 
 It implements basic collection options as add, remove, contains, len and clear as well as common set operations like union, intersection and difference.
 
+==== Ordered
+
+Package ordered provides ordered map and set implementations that maintain insertion order.
+
+They provide O(1) time complexity operations while allowing iterating over the elements in the order they were added.
+
 ==== Iterator
 
 Package iterator implements composable iterator functions.
