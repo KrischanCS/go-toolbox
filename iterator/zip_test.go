@@ -125,3 +125,135 @@ func TestZip_withBreak(t *testing.T) {
 	}
 	assert.Equal(t, want, got)
 }
+
+func ExampleZip3() {
+	numbers := iterator.Of(1, 2, 3, 4)
+	letters := iterator.Of("a", "b", "c")
+	bytes := iterator.Of('!', '@', '#')
+
+	for triple := range iterator.Zip3[int, string, rune](numbers, letters, bytes) {
+		fmt.Printf("%d %s %c\n", triple.First(), triple.Second(), triple.Third())
+	}
+
+	// Output:
+	// 1 a !
+	// 2 b @
+	// 3 c #
+}
+
+func TestZip3(t *testing.T) {
+	t.Parallel()
+
+	type testCase[A, B, C any] struct {
+		name   string
+		inputA iter.Seq[A]
+		inputB iter.Seq[B]
+		inputC iter.Seq[C]
+		want   []tuple.Triple[A, B, C]
+	}
+
+	testCases := []testCase[int, string, rune]{
+		{
+			name:   "empty slices",
+			inputA: iterator.Of[int](),
+			inputB: iterator.Of[string](),
+			inputC: iterator.Of[rune](),
+			want:   []tuple.Triple[int, string, rune]{},
+		},
+		{
+			name:   "one element",
+			inputA: iterator.Of(1),
+			inputB: iterator.Of("a"),
+			inputC: iterator.Of('!'),
+			want: []tuple.Triple[int, string, rune]{
+				tuple.TripleOf(1, "a", '!'),
+			},
+		},
+		{
+			name:   "multiple elements",
+			inputA: iterator.Of(1, 2, 3),
+			inputB: iterator.Of("a", "b", "c"),
+			inputC: iterator.Of('!', '@', '#'),
+			want: []tuple.Triple[int, string, rune]{
+				tuple.TripleOf(1, "a", '!'),
+				tuple.TripleOf(2, "b", '@'),
+				tuple.TripleOf(3, "c", '#'),
+			},
+		},
+		{
+			name:   "len(inputA) < len(inputB) and len(inputA) < len(inputC)",
+			inputA: iterator.Of(1, 2, 3),
+			inputB: iterator.Of("a", "b"),
+			inputC: iterator.Of('!', '@', '#', '$'),
+			want: []tuple.Triple[int, string, rune]{
+				tuple.TripleOf(1, "a", '!'),
+				tuple.TripleOf(2, "b", '@'),
+			},
+		},
+		{
+			name:   "len(inputB) < len(inputA) and len(inputB) < len(inputC)",
+			inputA: iterator.Of(1, 2, 3, 4),
+			inputB: iterator.Of("a", "b"),
+			inputC: iterator.Of('!', '@', '#'),
+			want: []tuple.Triple[int, string, rune]{
+				tuple.TripleOf(1, "a", '!'),
+				tuple.TripleOf(2, "b", '@'),
+			},
+		},
+		{
+			name:   "len(inputC) < len(inputA) and len(inputC) < len(inputB)",
+			inputA: iterator.Of(1, 2, 3, 4),
+			inputB: iterator.Of("a", "b", "c"),
+			inputC: iterator.Of('!', '@'),
+			want: []tuple.Triple[int, string, rune]{
+				tuple.TripleOf(1, "a", '!'),
+				tuple.TripleOf(2, "b", '@'),
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Arrange
+			got := make([]tuple.Triple[int, string, rune], 0, len(tc.want))
+
+			// Act
+			for p := range iterator.Zip3(tc.inputA, tc.inputB, tc.inputC) {
+				got = append(got, p)
+			}
+
+			// Assert
+			assert.Equal(t, tc.want, got)
+
+		})
+	}
+}
+
+func TestZip3_withBreak(t *testing.T) {
+	t.Parallel()
+
+	// Arrange
+	inputA := iterator.Of(1, 2, 3, 4, 5, 6)
+	inputB := iterator.Of("a", "b", "c", "d", "e", "f")
+	inputC := iterator.Of('!', '@', '#')
+
+	got := make([]tuple.Triple[int, string, rune], 0, 2)
+
+	stop := 3
+
+	// Act
+	for e := range iterator.Zip3(inputA, inputB, inputC) {
+		if e.First() == stop {
+			break
+		}
+
+		got = append(got, e)
+	}
+
+	// Assert
+	want := []tuple.Triple[int, string, rune]{
+		tuple.TripleOf(1, "a", '!'),
+		tuple.TripleOf(2, "b", '@'),
+	}
+	assert.Equal(t, want, got)
+}
