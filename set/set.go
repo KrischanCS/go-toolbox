@@ -14,22 +14,20 @@ import (
 	"sort"
 )
 
-type placeholderType struct{}
-
 //nolint:gochecknoglobals
-var placeholder = placeholderType{}
+var placeholder = struct{}{}
 
 // Set implements a collection of unique, unordered values.
 //
 // It is not thread-safe.
 type Set[T comparable] struct {
 	// keySetMap stores the values of the map as keys.
-	keySetMap map[T]placeholderType
+	keySetMap map[T]struct{}
 }
 
 // Of creates a new set with the given values.
 func Of[T comparable](values ...T) Set[T] {
-	s := Set[T]{keySetMap: make(map[T]placeholderType, len(values))}
+	s := Set[T]{keySetMap: make(map[T]struct{}, len(values))}
 
 	for _, v := range values {
 		s.keySetMap[v] = placeholder
@@ -40,7 +38,7 @@ func Of[T comparable](values ...T) Set[T] {
 
 // WithCapacity creates a Set with the given capacity.
 func WithCapacity[T comparable](capacity int) Set[T] {
-	return Set[T]{keySetMap: make(map[T]placeholderType, capacity)}
+	return Set[T]{keySetMap: make(map[T]struct{}, capacity)}
 }
 
 // Add adds the given values to the set if it is not already present.

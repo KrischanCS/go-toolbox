@@ -1,6 +1,9 @@
 package optional
 
-import "encoding/json"
+import (
+	"bytes"
+	"encoding/json"
+)
 
 // MarshalJSON encodes marshals the value if present or 'null' if empty.
 func (o Optional[T]) MarshalJSON() ([]byte, error) {
@@ -14,7 +17,7 @@ func (o Optional[T]) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON creates a present Optional if the value is not 'null',
 // otherwise an empty.
 func (o *Optional[T]) UnmarshalJSON(d []byte) error {
-	if string(d) == "null" {
+	if bytes.Equal(d, []byte("null")) {
 		var t T
 		o.value = t
 		o.present = false

@@ -35,8 +35,8 @@ tasks:
 
   lint:
     cmds:
-      - go golangci-lint fmt
-      - go golangci-lint run --output.tab.path stdout --output.tab.print-linter-name --output.tab.colors
+      - golangci-lint fmt
+      - golangci-lint run --output.tab.path stdout --output.tab.print-linter-name --output.tab.colors
     sources:
       - ./**/*.go
       - taskfile.yml
@@ -44,7 +44,7 @@ tasks:
 
   vulncheck:
     cmds:
-      - go govulncheck ./...
+      - govulncheck ./...
     sources:
       - ./**/*.go
       - taskfile.yml
